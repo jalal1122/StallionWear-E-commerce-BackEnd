@@ -33,6 +33,9 @@ const uploadOnCloudinary = async (filePath) => {
     } catch (error) {
       throw new ApiError(500, "Failed to delete local file after upload");
     }
+
+    // Return the cloudinary response
+    return result;
   } catch (error) {
     try {
       if (filePath && fs.existsSync(filePath)) {

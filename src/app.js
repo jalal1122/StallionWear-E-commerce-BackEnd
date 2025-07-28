@@ -10,6 +10,6 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Route setup
-app.use("/api/users", userRouter);
+app.use("/api/user", userRouter);
 
 export default app;
