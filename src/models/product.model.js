@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 const productSchema = new mongoose.Schema(
  {
     name: {
-        type : string,
+        type : String,
         required: [true, "Product name is required"],
         minlength: 2,
         maxlength: 100,
@@ -38,8 +38,8 @@ const productSchema = new mongoose.Schema(
     },
     variants : [
         {
-            size : string,
-            color : string,
+            size : {type : String},
+            color : {type : String},
             quantity : {
                 type: Number,
                 default: 0,
@@ -49,7 +49,7 @@ const productSchema = new mongoose.Schema(
         }
     ], 
     images : {
-        type : string,
+        type : [String],
         required: [true, "Product images are required"],
         default: [],
     },
