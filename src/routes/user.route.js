@@ -19,6 +19,6 @@ userRouter.post(
 userRouter.post("/login", loginUser);
 
 // @desc Route to logout a user
-userRouter.post("/logout", logoutUser);
+userRouter.put("/logout", logoutUser);
 
 export default userRouter;
