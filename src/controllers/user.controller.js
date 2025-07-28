@@ -123,7 +123,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   user.refreshToken = refreshToken;
 
   // save the user with the new refresh token
-  await user.save();
+  await user.save({ validateModifiedOnly: true });
 
   // send a success response with the user data and tokens
   res

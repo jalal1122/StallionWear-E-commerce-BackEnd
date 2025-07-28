@@ -16,11 +16,13 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Name is required"],
       minlength: 2,
+      trim: true,
     },
     email: {
       type: String,
       required: [true, "Email is required"],
       unique: true,
+      trim: true,
       lowercase: true,
       match: [emailRegex, "Please enter a valid email address"],
     },
@@ -28,6 +30,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"],
       minlength: 8,
+      trim: true,
       match: [
         passwordRegex,
         "Password must contain at least 8 characters with one letter, one number, and one special character",
