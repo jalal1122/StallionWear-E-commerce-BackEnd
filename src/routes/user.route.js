@@ -1,5 +1,9 @@
 import express from "express";
-import { registerUser, loginUser } from "../controllers/user.controller.js";
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+} from "../controllers/user.controller.js";
 import multerUpload from "../middlewares/multer.middleware.js";
 
 const userRouter = express.Router();
@@ -13,5 +17,8 @@ userRouter.post(
 
 // @desc Route to login a user
 userRouter.post("/login", loginUser);
+
+// @desc Route to logout a user
+userRouter.post("/logout", logoutUser);
 
 export default userRouter;
