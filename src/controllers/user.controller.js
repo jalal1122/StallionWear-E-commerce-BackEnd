@@ -1,9 +1,8 @@
 import User from "../models/user.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
-import asyncHanlder from "../utils/asyncHandler.js";
+import asyncHandler from "../utils/asyncHandler.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
-import bcrypt from "bcryptjs";
 
 // cookies Options
 const cookieOptions = {
@@ -12,7 +11,7 @@ const cookieOptions = {
 };
 
 // Function to register a new user
-export const registerUser = asyncHanlder(async (req, res) => {
+export const registerUser = asyncHandler(async (req, res) => {
   // get the user data from the request body
   const { name, email, password, role, address, phone } = req.body;
 
@@ -88,7 +87,7 @@ export const registerUser = asyncHanlder(async (req, res) => {
 });
 
 // Function to login a user
-export const loginUser = asyncHanlder(async (req, res) => {
+export const loginUser = asyncHandler(async (req, res) => {
   // get the email and password from the request body
   const { email, password } = req.body;
 
@@ -108,7 +107,7 @@ export const loginUser = asyncHanlder(async (req, res) => {
   }
 
   // check if the password is correct
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  const isPasswordValid = await user.comparePassword(password);
 
   // throw an error if the password is incorrect
   if (!isPasswordValid) {
