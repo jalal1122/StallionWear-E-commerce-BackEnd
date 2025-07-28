@@ -44,6 +44,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    profilePicture: {
+      type: String,
+      default: "https://rugby.vlaanderen/wp-content/uploads/2018/03/Anonymous-Profile-pic.jpg",
+    },
     wishlist: [
       {
         type: mongoose.Schema.Types.ObjectId,

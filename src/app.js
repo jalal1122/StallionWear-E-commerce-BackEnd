@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import userRouter from "./routes/user.route.js";
 
 const app = express();
 
@@ -9,5 +10,6 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 // Route setup
+app.use("/api/users", userRouter);
 
 export default app;
