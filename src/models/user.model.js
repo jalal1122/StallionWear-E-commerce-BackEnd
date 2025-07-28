@@ -5,8 +5,9 @@ import jwt from "jsonwebtoken";
 // Email Regex
 const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
 
-// Password: Min 6 chars, at least one letter & one number
-const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/;
+// Password: Min 8 chars, at least one letter, one number, and one special character
+const passwordRegex =
+  /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 
 // 🔐 User Schema Definition
 const userSchema = new mongoose.Schema(
@@ -26,10 +27,10 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
-      minlength: 6,
+      minlength: 8,
       match: [
         passwordRegex,
-        "Password must contain at least one letter and one number",
+        "Password must contain at least 8 characters with one letter, one number, and one special character",
       ],
     },
     role: {
@@ -44,6 +45,12 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       default: "",
+      validate: {
+        validator: function (v) {
+          return v === "" || /^[\+]?[1-9][\d]{0,15}$/.test(v);
+        },
+        message: "Please enter a valid phone number",
+      },
     },
     profilePicture: {
       type: String,
@@ -66,6 +73,8 @@ const userSchema = new mongoose.Schema(
         quantity: {
           type: Number,
           default: 1,
+          min: [1, "Quantity must be at least 1"],
+          max: [99, "Quantity cannot exceed 99"],
         },
       },
     ],
@@ -108,5 +117,8 @@ userSchema.methods.generateRefreshToken = function () {
 };
 
 const User = mongoose.model("User", userSchema);
+
+// Create index on email for better performance
+userSchema.index({ email: 1 });
 
 export default User;
