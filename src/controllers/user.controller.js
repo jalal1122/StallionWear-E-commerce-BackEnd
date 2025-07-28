@@ -4,6 +4,12 @@ import ApiResponse from "../utils/ApiResponse.js";
 import asyncHanlder from "../utils/asyncHandler.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
 
+// cookies Options
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production", // set secure flag in production
+};
+
 // Function to register a new user
 export const registerUser = asyncHanlder(async (req, res) => {
   // get the user data from the request body
@@ -52,7 +58,9 @@ export const registerUser = asyncHanlder(async (req, res) => {
         profilePicture: newUser.profilePicture,
       })
     );
-  } else {
+  }
+  // if no profile picture is provided, create a new user without it
+  else {
     // create a new user without a profile picture
     const newUser = await User.create({
       name,
@@ -76,4 +84,63 @@ export const registerUser = asyncHanlder(async (req, res) => {
       })
     );
   }
+});
+
+// Function to login a user
+export const loginUser = asyncHanlder(async (req, res) => {
+  // get the email and password from the request body
+  const { email, password } = req.body;
+
+  // validate the required fields
+  if (!email || !password) {
+    throw new ApiError(400, "Email and password are required");
+  }
+
+  // find the user by email and select the password field and refreshToken
+  const user = await User.findOne({
+    email,
+  }).select("-password");
+
+  // throw an error if the user does not exist
+  if (!user) {
+    throw new ApiError(404, "User not found with this email");
+  }
+
+  // check if the password is correct
+  const isPasswordValid = await user.comparePassword(password);
+
+  // throw an error if the password is incorrect
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Invalid password");
+  }
+
+  // generate access token and refresh token for the user
+  const accessToken = await user.generateAccessToken();
+
+  const refreshToken = await user.generateRefreshToken();
+
+  // update the user's refresh token in the database
+  user.refreshToken = refreshToken;
+
+  // save the user with the new refresh token
+  await user.save();
+
+  // send a success response with the user data and tokens
+  res
+    .status(200)
+    .cookie("refreshToken", refreshToken, cookieOptions)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .json(
+      new ApiResponse(200, "User logged in successfully", {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        address: user.address,
+        phone: user.phone,
+        profilePicture: user.profilePicture,
+        accessToken, // send the access token in the response
+        refreshToken, // send the refresh token in the response
+      })
+    );
 });
