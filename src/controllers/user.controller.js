@@ -144,3 +144,24 @@ export const loginUser = asyncHandler(async (req, res) => {
       })
     );
 });
+
+export const logoutUser = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.cookies;
+
+  // Clear cookies on the client side
+  res.clearCookie("accessToken", cookieOptions);
+  res.clearCookie("refreshToken", cookieOptions);
+
+  // If refreshToken exists, try to find and clear it from DB
+  if (refreshToken) {
+    const user = await User.findOne({ refreshToken });
+
+    if (user) {
+      user.refreshToken = "";
+      await user.save({ validateModifiedOnly: true });
+    }
+  }
+
+  // Return success response
+  res.status(200).json(new ApiResponse(200, "Logged out successfully", null));
+});
