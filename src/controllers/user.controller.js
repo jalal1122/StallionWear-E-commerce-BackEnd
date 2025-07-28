@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHanlder from "../utils/asyncHandler.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
+import bcrypt from "bcryptjs";
 
 // cookies Options
 const cookieOptions = {
@@ -99,7 +100,7 @@ export const loginUser = asyncHanlder(async (req, res) => {
   // find the user by email and select the password field and refreshToken
   const user = await User.findOne({
     email,
-  }).select("-password");
+  }).select("+password +refreshToken");
 
   // throw an error if the user does not exist
   if (!user) {
@@ -107,7 +108,7 @@ export const loginUser = asyncHanlder(async (req, res) => {
   }
 
   // check if the password is correct
-  const isPasswordValid = await user.comparePassword(password);
+  const isPasswordValid = await bcrypt.compare(password, user.password);
 
   // throw an error if the password is incorrect
   if (!isPasswordValid) {
