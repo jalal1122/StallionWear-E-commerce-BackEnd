@@ -1,6 +1,7 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import userRouter from "./routes/user.route.js";
+import productRouter from "./routes/product.route.js";
 
 const app = express();
 
@@ -11,6 +12,9 @@ app.use(express.urlencoded({ extended: true }));
 
 // Route setup
 app.use("/api/user", userRouter);
+
+// Product routes
+app.use("/api/product", productRouter);
 
 // Global error handling middleware
 app.use((err, req, res, next) => {
