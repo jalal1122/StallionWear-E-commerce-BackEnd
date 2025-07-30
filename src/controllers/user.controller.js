@@ -30,60 +30,40 @@ export const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "User already exists with this email");
   }
 
-  // upload profile picture if provided
+  // Prepare user data
+  const userData = {
+    name,
+    email,
+    password,
+    role: role || "user",
+    address: address || "",
+    phone: phone || "",
+  };
+
+  // Upload profile picture if provided
   if (req.file) {
-    // upload the image to cloudinary
     const result = await uploadOnCloudinary(req.file.path);
-
-    // create a new user with the provided data
-    const newUser = await User.create({
-      name,
-      email,
-      password,
-      role: role || "user", // default to 'user' if role is not provided
-      address: address || "",
-      phone: phone || "",
-      profilePicture: result.secure_url, // set the profile picture URL
-    });
-
-    // send a success response with the new user data
-    res.status(201).json(
-      new ApiResponse(201, "User registered successfully", {
-        _id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        address: newUser.address,
-        phone: newUser.phone,
-        profilePicture: newUser.profilePicture,
-      })
-    );
+    userData.profilePicture = result.secure_url;
   }
-  // if no profile picture is provided, create a new user without it
-  else {
-    // create a new user without a profile picture
-    const newUser = await User.create({
-      name,
-      email,
-      password,
-      role: role || "user", // default to 'user' if role is not provided
-      address: address || "",
-      phone: phone || "",
-    });
 
-    // send a success response with the new user data
-    res.status(201).json(
-      new ApiResponse(201, "User registered successfully", {
-        _id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        address: newUser.address,
-        phone: newUser.phone,
-        profilePicture: newUser.profilePicture,
-      })
-    );
-  }
+  // create a new user with the provided data
+  const newUser = await User.create(userData);
+
+  // Prepare response data (exclude sensitive fields)
+  const responseData = {
+    _id: newUser._id,
+    name: newUser.name,
+    email: newUser.email,
+    role: newUser.role,
+    address: newUser.address,
+    phone: newUser.phone,
+    profilePicture: newUser.profilePicture,
+  };
+
+  // send a success response with the new user data
+  res
+    .status(201)
+    .json(new ApiResponse(201, "User registered successfully", responseData));
 });
 
 // Function to login a user

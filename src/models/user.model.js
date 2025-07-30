@@ -50,6 +50,7 @@ const userSchema = new mongoose.Schema(
       default: "",
       validate: {
         validator: function (v) {
+          // Allow empty string or valid phone number
           return v === "" || /^[\+]?[1-9][\d]{0,15}$/.test(v);
         },
         message: "Please enter a valid phone number",
