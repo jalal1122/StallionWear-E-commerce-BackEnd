@@ -72,13 +72,30 @@ const userSchema = new mongoose.Schema(
         product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
+          required: true,
         },
-        size: String,
+        size: {
+          type: String,
+          required: true,
+        },
+        color: {
+          type: String,
+          required: true,
+        },
         quantity: {
           type: Number,
           default: 1,
           min: [1, "Quantity must be at least 1"],
           max: [99, "Quantity cannot exceed 99"],
+        },
+        priceAtTime: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now,
         },
       },
     ],
@@ -122,6 +139,61 @@ userSchema.methods.generateRefreshToken = function () {
       expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     }
   );
+};
+
+// Cart utility methods
+userSchema.methods.addToCart = function (
+  productId,
+  size,
+  color,
+  price,
+  quantity = 1
+) {
+  const cartItemIndex = this.cart.findIndex(
+    (item) =>
+      item.product.toString() === productId.toString() &&
+      item.size === size &&
+      item.color === color
+  );
+
+  if (cartItemIndex > -1) {
+    // Update existing item
+    this.cart[cartItemIndex].quantity += quantity;
+    this.cart[cartItemIndex].priceAtTime = price; // Update price
+  } else {
+    // Add new item
+    this.cart.push({
+      product: productId,
+      size,
+      color,
+      quantity,
+      priceAtTime: price,
+    });
+  }
+  return this.save();
+};
+
+userSchema.methods.removeFromCart = function (productId, size, color) {
+  this.cart = this.cart.filter(
+    (item) =>
+      !(
+        item.product.toString() === productId.toString() &&
+        item.size === size &&
+        item.color === color
+      )
+  );
+  return this.save();
+};
+
+userSchema.methods.clearCart = function () {
+  this.cart = [];
+  return this.save();
+};
+
+userSchema.methods.getCartTotal = function () {
+  return this.cart.reduce((total, item) => {
+    return total + item.priceAtTime * item.quantity;
+  }, 0);
 };
 
 const User = mongoose.model("User", userSchema);

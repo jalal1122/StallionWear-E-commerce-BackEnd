@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import userRouter from "./routes/user.route.js";
 import productRouter from "./routes/product.route.js";
+import orderRouter from "./routes/order.route.js";
 import { generalLimiter } from "./middlewares/rateLimiter.middleware.js";
 
 const app = express();
@@ -33,11 +34,14 @@ app.use(express.json({ limit: "16kb" }));
 app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cookieParser());
 
-// Route setup
+// User Routes
 app.use("/api/user", userRouter);
 
 // Product routes
 app.use("/api/product", productRouter);
+
+// Order routes
+app.use("/api/order", orderRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

@@ -58,8 +58,84 @@ export const validateUserLogin = [
   handleValidationErrors,
 ];
 
+// Order creation validation rules
+export const validateOrderCreation = [
+  body("orderItems")
+    .isArray({ min: 1 })
+    .withMessage("Order must contain at least one item"),
+
+  body("orderItems.*.product")
+    .isMongoId()
+    .withMessage("Each order item must have a valid product ID"),
+
+  body("orderItems.*.size")
+    .notEmpty()
+    .trim()
+    .withMessage("Size is required for each order item"),
+
+  body("orderItems.*.color")
+    .notEmpty()
+    .trim()
+    .withMessage("Color is required for each order item"),
+
+  body("orderItems.*.quantity")
+    .isInt({ min: 1, max: 99 })
+    .withMessage("Quantity must be between 1 and 99"),
+
+  body("shippingAddress.fullName")
+    .notEmpty()
+    .trim()
+    .withMessage("Full name is required in shipping address"),
+
+  body("shippingAddress.address")
+    .notEmpty()
+    .trim()
+    .withMessage("Address is required in shipping address"),
+
+  body("shippingAddress.city")
+    .notEmpty()
+    .trim()
+    .withMessage("City is required in shipping address"),
+
+  body("shippingAddress.postalCode")
+    .notEmpty()
+    .trim()
+    .withMessage("Postal code is required in shipping address"),
+
+  body("shippingAddress.country")
+    .notEmpty()
+    .trim()
+    .withMessage("Country is required in shipping address"),
+
+  body("shippingAddress.phone")
+    .matches(/^[\+]?[1-9][\d]{0,15}$/)
+    .withMessage("Please provide a valid phone number in shipping address"),
+
+  body("paymentMethod")
+    .isIn(["CashOnDelivery", "Stripe", "PayPal"])
+    .withMessage("Payment method must be CashOnDelivery, Stripe, or PayPal"),
+
+  body("shippingCharge")
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage("Shipping charge must be a positive number"),
+
+  body("discount")
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage("Discount must be a positive number"),
+
+  body("notes")
+    .optional()
+    .isLength({ max: 500 })
+    .withMessage("Notes cannot exceed 500 characters"),
+
+  handleValidationErrors,
+];
+
 export default {
   validateUserRegistration,
   validateUserLogin,
+  validateOrderCreation,
   handleValidationErrors,
 };
