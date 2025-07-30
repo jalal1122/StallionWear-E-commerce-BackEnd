@@ -17,9 +17,12 @@ const storage = multer.diskStorage({
 
 const multerUpload = multer({
   storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Limit file size to 10MB
+  limits: {
+    fileSize: 10 * 1024 * 1024, // Limit file size to 10MB per file
+    files: 10, // Maximum 10 files
+  },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif/;
+    const allowedTypes = /jpeg|jpg|png|gif|webp/;
     const extname = allowedTypes.test(
       path.extname(file.originalname).toLowerCase()
     );
@@ -28,9 +31,19 @@ const multerUpload = multer({
     if (extname && mimetype) {
       return cb(null, true);
     } else {
-      cb(new Error("Only images are allowed!"));
+      cb(
+        new Error("Only image files (jpeg, jpg, png, gif, webp) are allowed!")
+      );
     }
   },
 });
+
+// Export different configurations for different use cases
+export const uploadSingle = multerUpload.single("image"); // For single image (profile picture)
+export const uploadMultiple = multerUpload.array("images", 10); // For multiple images (product images)
+export const uploadFields = multerUpload.fields([
+  { name: "images", maxCount: 10 },
+  { name: "thumbnail", maxCount: 1 },
+]); // For mixed field uploads
 
 export default multerUpload;

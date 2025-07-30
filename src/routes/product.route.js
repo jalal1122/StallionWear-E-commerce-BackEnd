@@ -1,27 +1,35 @@
 import express from "express";
 import {
   createProduct,
-    getAllProducts,
-    getProductById,
-    updateProduct,
-    deleteProduct
+  getAllProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
 } from "../controllers/product.controller.js";
-import multerUpload from "../middlewares/multer.middleware.js";
+import { uploadMultiple } from "../middlewares/multer.middleware.js";
+import authMiddleware from "../middlewares/auth.middleware.js";
 
 const productRouter = express.Router();
 
-
-productRouter.post(
-  "/create",
-  multerUpload.single("productImage"), createProduct
-);
-
+// Public routes
 productRouter.get("/", getAllProducts);
 productRouter.get("/:id", getProductById);
+
+// Protected routes (require authentication)
+productRouter.post(
+  "/create",
+  authMiddleware,
+  uploadMultiple, // This handles req.files (array of files)
+  createProduct
+);
+
 productRouter.put(
   "/update/:id",
-  multerUpload.single("productImage"), updateProduct
+  authMiddleware,
+  uploadMultiple, // This handles req.files (array of files)
+  updateProduct
 );
-productRouter.delete("/:id", deleteProduct);
+
+productRouter.delete("/:id", authMiddleware, deleteProduct);
 
 export default productRouter;

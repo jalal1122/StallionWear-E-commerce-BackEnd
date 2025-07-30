@@ -4,7 +4,7 @@ import {
   loginUser,
   logoutUser,
 } from "../controllers/user.controller.js";
-import multerUpload from "../middlewares/multer.middleware.js";
+import { uploadSingle } from "../middlewares/multer.middleware.js";
 import { authLimiter } from "../middlewares/rateLimiter.middleware.js";
 import {
   validateUserRegistration,
@@ -18,7 +18,7 @@ const userRouter = express.Router();
 userRouter.post(
   "/register",
   authLimiter, // Apply rate limiting
-  multerUpload.single("profilePicture"), // Middleware to handle file upload
+  uploadSingle, // Handle single profile picture upload
   validateUserRegistration, // Apply validation
   registerUser
 );
