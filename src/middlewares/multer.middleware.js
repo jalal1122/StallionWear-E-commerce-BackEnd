@@ -39,7 +39,7 @@ const multerUpload = multer({
 });
 
 // Export different configurations for different use cases
-export const uploadSingle = multerUpload.single("image"); // For single image (profile picture)
+export const uploadSingle = multerUpload.single("profilePicture"); // For single image (profile picture)
 export const uploadMultiple = multerUpload.array("images", 10); // For multiple images (product images)
 export const uploadFields = multerUpload.fields([
   { name: "images", maxCount: 10 },
