@@ -88,8 +88,15 @@ const orderSchema = new mongoose.Schema(
 
     orderStatus: {
       type: String,
-      enum: ["Processing", "Confirmed", "Shipped", "Delivered", "Cancelled"],
-      default: "Processing",
+      enum: [
+        "Pending",
+        "Processing",
+        "Confirmed",
+        "Shipped",
+        "Delivered",
+        "Cancelled",
+      ],
+      default: "Pending",
     },
 
     trackingNumber: {
@@ -197,7 +204,7 @@ orderSchema.pre("save", function (next) {
 
 // Instance methods
 orderSchema.methods.canBeCancelled = function () {
-  return ["Processing", "Confirmed"].includes(this.orderStatus);
+  return ["Pending", "Processing", "Confirmed"].includes(this.orderStatus);
 };
 
 orderSchema.methods.cancel = function () {
@@ -217,9 +224,14 @@ orderSchema.methods.markAsDelivered = function () {
 
 orderSchema.methods.updateStatus = function (newStatus, trackingNumber = null) {
   if (
-    !["Processing", "Confirmed", "Shipped", "Delivered", "Cancelled"].includes(
-      newStatus
-    )
+    ![
+      "Pending",
+      "Processing",
+      "Confirmed",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+    ].includes(newStatus)
   ) {
     throw new Error("Invalid order status");
   }
@@ -236,7 +248,6 @@ orderSchema.methods.updateStatus = function (newStatus, trackingNumber = null) {
   }
 
   console.log(`Order status updated to ${newStatus}`);
-  
 
   return this.save();
 };
