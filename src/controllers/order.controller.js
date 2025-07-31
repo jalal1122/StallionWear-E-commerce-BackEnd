@@ -7,6 +7,10 @@ import ApiResponse from "../utils/ApiResponse.js";
 
 // Function to create a new order
 export const createOrder = asyncHandler(async (req, res) => {
+  if (req.user.role !== "user") {
+    throw new ApiError(403, "Access denied. User role required.");
+  }
+
   // get the order data from the request body
   const {
     orderItems,
