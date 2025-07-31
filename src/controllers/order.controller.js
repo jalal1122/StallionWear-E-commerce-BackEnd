@@ -7,9 +7,8 @@ import ApiResponse from "../utils/ApiResponse.js";
 
 // Function to create a new order
 export const createOrder = asyncHandler(async (req, res) => {
-  if (req.user.role !== "user") {
-    throw new ApiError(403, "Access denied. User role required.");
-  }
+  // Authentication is already handled by authMiddleware
+  // Both users and admins can create orders
 
   // get the order data from the request body
   const {
@@ -23,6 +22,8 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   //   get the user id from the middleware
   const userId = req.user._id;
+
+  console.log(req.user);
 
   //   validate the required fields
   if (!orderItems || orderItems.length === 0) {
@@ -129,8 +130,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   }
 
   // Clear user's cart (optional - you might want to do this after payment confirmation)
-  const user = await User.findById(userId);
-  await user.clearCart();
+  await User.findByIdAndUpdate(userId, { $set: { cart: [] } });
 
   // Populate the order with product and user details
   const populatedOrder = await Order.findById(newOrder._id)

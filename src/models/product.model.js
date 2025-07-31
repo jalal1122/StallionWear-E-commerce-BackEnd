@@ -79,30 +79,33 @@ const productSchema = new mongoose.Schema(
       required: [true, "Product images are required"],
       default: [],
     },
-    reviews: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
+    reviews: {
+      type: [
+        {
+          user: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+          },
+          rating: {
+            type: Number,
+            required: true,
+            min: 1,
+            max: 5,
+          },
+          comment: {
+            type: String,
+            required: true,
+            minlength: 10,
+          },
+          createdAt: {
+            type: Date,
+            default: Date.now,
+          },
         },
-        rating: {
-          type: Number,
-          required: true,
-          min: 1,
-          max: 5,
-        },
-        comment: {
-          type: String,
-          required: true,
-          minlength: 10,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+      ],
+      default: [],
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -124,18 +127,20 @@ productSchema.index({ "variants.size": 1, "variants.color": 1 });
 
 // Virtual for average rating
 productSchema.virtual("averageRating").get(function () {
-  if (this.reviews.length === 0) return 0;
+  if (!this.reviews || this.reviews.length === 0) return 0;
   const sum = this.reviews.reduce((acc, review) => acc + review.rating, 0);
   return Math.round((sum / this.reviews.length) * 10) / 10; // Round to 1 decimal
 });
 
 // Virtual for total stock across all variants
 productSchema.virtual("totalStock").get(function () {
+  if (!this.variants || this.variants.length === 0) return 0;
   return this.variants.reduce((total, variant) => total + variant.quantity, 0);
 });
 
 // Method to check if product is in stock for specific variant
 productSchema.methods.isInStock = function (size, color, quantity = 1) {
+  if (!this.variants || this.variants.length === 0) return false;
   const variant = this.variants.find(
     (v) => v.size === size && v.color === color
   );
@@ -144,6 +149,7 @@ productSchema.methods.isInStock = function (size, color, quantity = 1) {
 
 // Method to get variant by size and color
 productSchema.methods.getVariant = function (size, color) {
+  if (!this.variants || this.variants.length === 0) return null;
   return this.variants.find((v) => v.size === size && v.color === color);
 };
 

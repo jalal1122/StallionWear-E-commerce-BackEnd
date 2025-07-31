@@ -170,7 +170,7 @@ userSchema.methods.addToCart = function (
       priceAtTime: price,
     });
   }
-  return this.save();
+  return this.save({ validateBeforeSave: false });
 };
 
 userSchema.methods.removeFromCart = function (productId, size, color) {
@@ -182,12 +182,12 @@ userSchema.methods.removeFromCart = function (productId, size, color) {
         item.color === color
       )
   );
-  return this.save();
+  return this.save({ validateBeforeSave: false });
 };
 
 userSchema.methods.clearCart = function () {
   this.cart = [];
-  return this.save();
+  return this.save({ validateBeforeSave: false });
 };
 
 userSchema.methods.getCartTotal = function () {

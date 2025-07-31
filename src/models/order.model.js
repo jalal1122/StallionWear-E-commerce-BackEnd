@@ -235,6 +235,9 @@ orderSchema.methods.updateStatus = function (newStatus, trackingNumber = null) {
     this.deliveredAt = new Date();
   }
 
+  console.log(`Order status updated to ${newStatus}`);
+  
+
   return this.save();
 };
 
