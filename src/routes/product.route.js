@@ -12,10 +12,15 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 const productRouter = express.Router();
 
 // Public routes
+// Get all products
 productRouter.get("/", getAllProducts);
+
+// Get product by ID
 productRouter.get("/:id", getProductById);
 
 // Protected routes (require authentication)
+
+// Create product
 productRouter.post(
   "/create",
   authMiddleware,
@@ -23,6 +28,7 @@ productRouter.post(
   createProduct
 );
 
+// Update product
 productRouter.put(
   "/update/:id",
   authMiddleware,
@@ -30,6 +36,7 @@ productRouter.put(
   updateProduct
 );
 
+// Delete product
 productRouter.delete("/:id", authMiddleware, deleteProduct);
 
 export default productRouter;
