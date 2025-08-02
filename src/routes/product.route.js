@@ -5,6 +5,8 @@ import {
   getProductById,
   updateProduct,
   deleteProduct,
+  getNewArrivals,
+  getTopSellingProducts,
 } from "../controllers/product.controller.js";
 import { uploadMultiple } from "../middlewares/multer.middleware.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
@@ -14,6 +16,12 @@ const productRouter = express.Router();
 // Public routes
 // Get all products
 productRouter.get("/", getAllProducts);
+
+// get new arrivals (example route, can be customized)
+productRouter.get("/newArrivals", getNewArrivals);
+
+// get top selling products
+productRouter.get("/topSelling", getTopSellingProducts);
 
 // Get product by ID
 productRouter.get("/:id", getProductById);

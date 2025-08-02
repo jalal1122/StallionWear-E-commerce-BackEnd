@@ -2,11 +2,13 @@ import Product from "../models/product.model.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
+import Order from "../models/order.model.js";
 import uploadOnCloudinary, {
   uploadMultipleOnCloudinary,
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
 
+// Function to create a new product
 export const createProduct = asyncHandler(async (req, res) => {
   const { name, description, price, category, brand, stock, variants } =
     req.body;
@@ -93,6 +95,7 @@ export const createProduct = asyncHandler(async (req, res) => {
   );
 });
 
+// Function to get all products with optional filters and pagination
 export const getAllProducts = asyncHandler(async (req, res) => {
   const {
     page = 1,
@@ -162,6 +165,119 @@ export const getAllProducts = asyncHandler(async (req, res) => {
   );
 });
 
+// function to get the new arrivals product from each category
+export const getNewArrivals = asyncHandler(async (req, res) => {
+  const products = await Product.aggregate([
+    {
+      // Sort all products by creation date (newest first)
+      $sort: { createdAt: -1 }
+    },
+    {
+      // Group by category and get the first (newest) product from each category
+      $group: {
+        _id: "$category",
+        latestProduct: { $first: "$$ROOT" }
+      }
+    },
+    {
+      // Replace the root with the actual product document
+      $replaceRoot: { newRoot: "$latestProduct" }
+    },
+    {
+      // Sort the results by creation date (newest categories first)
+      $sort: { createdAt: -1 }
+    },
+    {
+      // Limit to 10 categories
+      $limit: 10
+    }
+  ]);
+
+  // Send response
+  res.status(200).json(
+    new ApiResponse(200, "New arrivals fetched successfully", products)
+  );
+});
+
+// Function to get top selling products based on order data
+export const getTopSellingProducts = asyncHandler(async (req, res) => {
+  
+  const topProducts = await Order.aggregate([
+    {
+      // Match only delivered/completed orders
+      $match: {
+        orderStatus: { $in: ["Delivered", "Shipped"] }
+      }
+    },
+    {
+      // Unwind the orderItems array
+      $unwind: "$orderItems"
+    },
+    {
+      // Group by product and sum quantities
+      $group: {
+        _id: "$orderItems.product",
+        totalQuantitySold: { $sum: "$orderItems.quantity" },
+        totalRevenue: { $sum: "$orderItems.subtotal" },
+        orderCount: { $sum: 1 }
+      }
+    },
+    {
+      // Sort by total quantity sold (descending)
+      $sort: { totalQuantitySold: -1 }
+    },
+    {
+      // Limit to top 5
+      $limit: 5
+    },
+    {
+      // Lookup product details
+      $lookup: {
+        from: "products",
+        localField: "_id",
+        foreignField: "_id",
+        as: "productDetails"
+      }
+    },
+    {
+      // Unwind product details
+      $unwind: "$productDetails"
+    },
+    {
+      // Project final structure
+      $project: {
+        _id: "$productDetails._id",
+        name: "$productDetails.name",
+        description: "$productDetails.description",
+        price: "$productDetails.price",
+        category: "$productDetails.category",
+        brand: "$productDetails.brand",
+        images: "$productDetails.images",
+        variants: "$productDetails.variants",
+        totalQuantitySold: 1,
+        totalRevenue: 1,
+        orderCount: 1
+      }
+    }
+  ]);
+
+  // Fallback if no sales data found
+  if (topProducts.length === 0) {
+    const fallbackProducts = await Product.find()
+      .sort({ createdAt: -1 })
+      .limit(5);
+    
+    return res.status(200).json(
+      new ApiResponse(200, "Top selling products fetched successfully (showing newest products)", fallbackProducts)
+    );
+  }
+
+  res.status(200).json(
+    new ApiResponse(200, "Top selling products fetched successfully", topProducts)
+  );
+});
+
+// Function to get a product by ID
 export const getProductById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!id) {
@@ -178,6 +294,7 @@ export const getProductById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Product fetched successfully", product));
 });
 
+// Function to update a product
 export const updateProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const { name, description, price, category, brand, stock, variants } =
@@ -255,6 +372,7 @@ export const updateProduct = asyncHandler(async (req, res) => {
   );
 });
 
+// Function to delete a product
 export const deleteProduct = asyncHandler(async (req, res) => {
   const { id } = req.params;
   if (!id) {
