@@ -109,17 +109,46 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     sortOrder = "desc",
   } = req.query;
 
+  // Validate pagination parameters
+  if (page < 1 || limit < 1) {
+    throw new ApiError(400, "Page and limit must be greater than 0");
+  }
+
+  console.log(
+    `Fetching products - Page: ${page}, Limit: ${limit}, Category: ${category}, Brand: ${brand}, Min Price: ${minPrice}, Max Price: ${maxPrice}, Search: ${search}, Sort By: ${sortBy}, Sort Order: ${sortOrder}`
+  );
+
   // Build query object
   let query = {};
 
   // Category filter
   if (category) {
+    // Handle categories array
+    let categoryArray;
+    if (typeof category === "string") {
+      try {
+        // If it's a JSON string, parse it
+        categoryArray = JSON.parse(category);
+      } catch (error) {
+        // If it's a comma-separated string, split it
+        categoryArray = category.split(",").map((cat) => cat.trim());
+      }
+    } else if (Array.isArray(category)) {
+      categoryArray = category.map((cat) => cat.trim());
+    }
+
+    if (categoryArray && categoryArray.length > 0) {
+      query.category = { $in: categoryArray };
+    }
+  } else if (category) {
+    // Handle single category (backward compatibility)
     query.category = category;
   }
 
   // Brand filter
   if (brand) {
-    query.brand = brand;
+    // query.brand = brand;
+    query.brand = { $regex: brand, $options: "i" };
   }
 
   // Price range filter
@@ -139,7 +168,7 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     .populate("createdBy", "name")
     .sort({ [sortBy]: sortOrder === "asc" ? 1 : -1 })
     .limit(limit * 1)
-    .skip((page - 1) * limit);
+    .skip((parseInt(page) - 1) * limit);
 
   const totalProducts = await Product.countDocuments(query);
 
@@ -170,48 +199,47 @@ export const getNewArrivals = asyncHandler(async (req, res) => {
   const products = await Product.aggregate([
     {
       // Sort all products by creation date (newest first)
-      $sort: { createdAt: -1 }
+      $sort: { createdAt: -1 },
     },
     {
       // Group by category and get the first (newest) product from each category
       $group: {
         _id: "$category",
-        latestProduct: { $first: "$$ROOT" }
-      }
+        latestProduct: { $first: "$$ROOT" },
+      },
     },
     {
       // Replace the root with the actual product document
-      $replaceRoot: { newRoot: "$latestProduct" }
+      $replaceRoot: { newRoot: "$latestProduct" },
     },
     {
       // Sort the results by creation date (newest categories first)
-      $sort: { createdAt: -1 }
+      $sort: { createdAt: -1 },
     },
     {
       // Limit to 10 categories
-      $limit: 10
-    }
+      $limit: 10,
+    },
   ]);
 
   // Send response
-  res.status(200).json(
-    new ApiResponse(200, "New arrivals fetched successfully", products)
-  );
+  res
+    .status(200)
+    .json(new ApiResponse(200, "New arrivals fetched successfully", products));
 });
 
 // Function to get top selling products based on order data
 export const getTopSellingProducts = asyncHandler(async (req, res) => {
-  
   const topProducts = await Order.aggregate([
     {
       // Match only delivered/completed orders
       $match: {
-        orderStatus: { $in: ["Delivered", "Shipped"] }
-      }
+        orderStatus: { $in: ["Delivered", "Shipped"] },
+      },
     },
     {
       // Unwind the orderItems array
-      $unwind: "$orderItems"
+      $unwind: "$orderItems",
     },
     {
       // Group by product and sum quantities
@@ -219,16 +247,16 @@ export const getTopSellingProducts = asyncHandler(async (req, res) => {
         _id: "$orderItems.product",
         totalQuantitySold: { $sum: "$orderItems.quantity" },
         totalRevenue: { $sum: "$orderItems.subtotal" },
-        orderCount: { $sum: 1 }
-      }
+        orderCount: { $sum: 1 },
+      },
     },
     {
       // Sort by total quantity sold (descending)
-      $sort: { totalQuantitySold: -1 }
+      $sort: { totalQuantitySold: -1 },
     },
     {
       // Limit to top 5
-      $limit: 5
+      $limit: 5,
     },
     {
       // Lookup product details
@@ -236,12 +264,12 @@ export const getTopSellingProducts = asyncHandler(async (req, res) => {
         from: "products",
         localField: "_id",
         foreignField: "_id",
-        as: "productDetails"
-      }
+        as: "productDetails",
+      },
     },
     {
       // Unwind product details
-      $unwind: "$productDetails"
+      $unwind: "$productDetails",
     },
     {
       // Project final structure
@@ -256,9 +284,9 @@ export const getTopSellingProducts = asyncHandler(async (req, res) => {
         variants: "$productDetails.variants",
         totalQuantitySold: 1,
         totalRevenue: 1,
-        orderCount: 1
-      }
-    }
+        orderCount: 1,
+      },
+    },
   ]);
 
   // Fallback if no sales data found
@@ -266,15 +294,27 @@ export const getTopSellingProducts = asyncHandler(async (req, res) => {
     const fallbackProducts = await Product.find()
       .sort({ createdAt: -1 })
       .limit(5);
-    
-    return res.status(200).json(
-      new ApiResponse(200, "Top selling products fetched successfully (showing newest products)", fallbackProducts)
-    );
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          "Top selling products fetched successfully (showing newest products)",
+          fallbackProducts
+        )
+      );
   }
 
-  res.status(200).json(
-    new ApiResponse(200, "Top selling products fetched successfully", topProducts)
-  );
+  res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        "Top selling products fetched successfully",
+        topProducts
+      )
+    );
 });
 
 // Function to get a product by ID
