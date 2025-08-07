@@ -6,6 +6,7 @@ import userRouter from "./routes/user.route.js";
 import productRouter from "./routes/product.route.js";
 import orderRouter from "./routes/order.route.js";
 import { generalLimiter } from "./middlewares/rateLimiter.middleware.js";
+import cartRouter from "./routes/cart.route.js";
 
 const app = express();
 
@@ -42,6 +43,9 @@ app.use("/api/product", productRouter);
 
 // Order routes
 app.use("/api/order", orderRouter);
+
+// Cart routes
+app.use("/api/cart", cartRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {
