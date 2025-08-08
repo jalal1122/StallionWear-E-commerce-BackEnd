@@ -63,8 +63,28 @@ const userSchema = new mongoose.Schema(
     },
     wishlist: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
+        product: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        size: {
+          type: String,
+          required: true,
+        },
+        color: {
+          type: String,
+          required: true,
+        },
+        priceAtTime: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
     cart: [
@@ -194,6 +214,55 @@ userSchema.methods.getCartTotal = function () {
   return this.cart.reduce((total, item) => {
     return total + item.priceAtTime * item.quantity;
   }, 0);
+};
+
+// Wishlist utility methods
+userSchema.methods.addToWishlist = function (productId, size, color, price) {
+  const idx = this.wishlist.findIndex(
+    (item) =>
+      item.product.toString() === productId.toString() &&
+      item.size === size &&
+      item.color === color
+  );
+
+  if (idx > -1) {
+    // Update price snapshot & timestamp
+    this.wishlist[idx].priceAtTime = price;
+    this.wishlist[idx].addedAt = Date.now();
+  } else {
+    this.wishlist.push({
+      product: productId,
+      size,
+      color,
+      priceAtTime: price,
+    });
+  }
+  return this.save({ validateBeforeSave: false });
+};
+
+userSchema.methods.removeFromWishlist = function (productId, size, color) {
+  this.wishlist = this.wishlist.filter(
+    (item) =>
+      !(
+        item.product.toString() === productId.toString() &&
+        item.size === size &&
+        item.color === color
+      )
+  );
+  return this.save({ validateBeforeSave: false });
+};
+
+userSchema.methods.clearWishlist = function () {
+  this.wishlist = [];
+  return this.save({ validateBeforeSave: false });
+};
+
+userSchema.methods.getWishlistCount = function () {
+  return this.wishlist.length;
+};
+
+userSchema.methods.getWishlistEstimatedValue = function () {
+  return this.wishlist.reduce((sum, item) => sum + item.priceAtTime, 0);
 };
 
 const User = mongoose.model("User", userSchema);
