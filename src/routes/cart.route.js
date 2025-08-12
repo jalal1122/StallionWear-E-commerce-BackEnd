@@ -42,6 +42,6 @@ cartRouter.patch("/decrement", decrementCartItem);
 // @desc Increment item quantity in the cart
 // @route PATCH /api/cart/increment/:itemId
 // @access Private
-cartRouter.patch("/increment/:itemId", incrementCartItem);
+cartRouter.patch("/increment", incrementCartItem);
 
 export default cartRouter;
