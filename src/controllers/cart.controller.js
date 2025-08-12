@@ -5,7 +5,7 @@ import ApiResponse from "../utils/ApiResponse.js";
 
 // Function to add an item to the cart
 export const addToCart = asyncHandler(async (req, res) => {
-  const { productId, size, color, price, quantity } = req.body;
+  const { productId, size, color, price, quantity = 1 } = req.body;
 
   // Validate request data
   if (!productId || !size || !color || !price || !quantity) {
@@ -371,8 +371,8 @@ export const incrementCartItem = asyncHandler(async (req, res) => {
   }
 
   // Check maximum quantity limit
-  if (user.cart[cartItemIndex].quantity >= 10) {
-    throw new ApiError(400, "Maximum quantity per item is 10");
+  if (user.cart[cartItemIndex].quantity >= 100) {
+    throw new ApiError(400, "Maximum quantity per item is 100");
   }
 
   // Optional: Check product stock availability
