@@ -6,6 +6,8 @@ export const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const errorMessages = errors.array().map((error) => error.msg);
+    console.log("Validation errors:", errorMessages);
+
     throw new ApiError(400, errorMessages.join(", "));
   }
   next();
@@ -64,7 +66,7 @@ export const validateOrderCreation = [
     .isArray({ min: 1 })
     .withMessage("Order must contain at least one item"),
 
-  body("orderItems.*.product")
+  body("orderItems.*.product._id")
     .isMongoId()
     .withMessage("Each order item must have a valid product ID"),
 

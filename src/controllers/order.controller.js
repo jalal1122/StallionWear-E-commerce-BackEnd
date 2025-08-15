@@ -4,6 +4,7 @@ import User from "../models/user.model.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
+import { log } from "console";
 
 // Function to create a new order
 export const createOrder = asyncHandler(async (req, res) => {
@@ -22,8 +23,6 @@ export const createOrder = asyncHandler(async (req, res) => {
 
   //   get the user id from the middleware
   const userId = req.user._id;
-
-  console.log(req.user);
 
   //   validate the required fields
   if (!orderItems || orderItems.length === 0) {
