@@ -5,6 +5,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import { log } from "console";
+import { stat } from "fs";
 
 // Function to create a new order
 export const createOrder = asyncHandler(async (req, res) => {
@@ -144,7 +145,7 @@ export const createOrder = asyncHandler(async (req, res) => {
 // Function to get all orders for the authenticated user
 export const getUserOrders = asyncHandler(async (req, res) => {
   const userId = req.user._id;
-  const { page = 1, limit = 10, status } = req.query;
+  const { page = 1, limit = 5, status } = req.query;
 
   // Build query
   let query = { user: userId };
