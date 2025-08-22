@@ -8,6 +8,7 @@ import orderRouter from "./routes/order.route.js";
 import { generalLimiter } from "./middlewares/rateLimiter.middleware.js";
 import cartRouter from "./routes/cart.route.js";
 import wishlistRouter from "./routes/wishList.route.js";
+import reviewRouter from "./routes/review.route.js";
 
 const app = express();
 
@@ -50,6 +51,9 @@ app.use("/api/cart", cartRouter);
 
 // Wishlist routes
 app.use("/api/wishlist", wishlistRouter);
+
+// Review routes
+app.use("/api/review", reviewRouter);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

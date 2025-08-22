@@ -114,10 +114,6 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Page and limit must be greater than 0");
   }
 
-  console.log(
-    `Fetching products - Page: ${page}, Limit: ${limit}, Category: ${category}, Brand: ${brand}, Min Price: ${minPrice}, Max Price: ${maxPrice}, Search: ${search}, Sort By: ${sortBy}, Sort Order: ${sortOrder}`
-  );
-
   // Build query object
   let query = {};
 
@@ -222,10 +218,15 @@ export const getNewArrivals = asyncHandler(async (req, res) => {
     },
   ]);
 
+  const populatedProducts = await Product.populate(products, {
+    path: "createdBy",
+    select: "name",
+  });
+
   // Send response
   res
     .status(200)
-    .json(new ApiResponse(200, "New arrivals fetched successfully", products));
+    .json(new ApiResponse(200, "New arrivals fetched successfully", populatedProducts));
 });
 
 // Function to get top selling products based on order data
