@@ -26,6 +26,7 @@ app.use(generalLimiter);
 app.use(
   cors({
     origin: [
+      "https://stallion-wear-e-commerce-front-end-kappa.vercel.app/",
       "https://stallionwear.vercel.app/",
       "http://localhost:5173",
     ],
