@@ -145,3 +145,53 @@ export const logoutUser = asyncHandler(async (req, res) => {
   // Return success response
   res.status(200).json(new ApiResponse(200, "Logged out successfully", null));
 });
+
+// Function to refresh access token using refresh token
+export const refreshAccessToken = asyncHandler(async (req, res) => {
+  // Get refresh token from cookies or request body
+  const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+
+  console.log("refreshing token");
+  
+
+  if (!refreshToken) {
+    throw new ApiError(401, "Refresh token is missing");
+  }
+
+  // Find user with this refresh token
+  const user = await User.findOne({ refreshToken }).select("-password");
+  if (!user) {
+    throw new ApiError(401, "Invalid refresh token");
+  }
+
+  // Verify refresh token
+  let decoded;
+  try {
+    decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+  } catch (error) {
+    throw new ApiError(401, "Refresh token is invalid or expired");
+  }
+
+  // Issue new access token
+  const newAccessToken = user.generateAccessToken();
+
+  // Send new tokens in response (cookie and body)
+  res
+    .status(200)
+    .cookie("accessToken", newAccessToken, cookieOptions)
+    .json(
+      new ApiResponse(200, "Access token refreshed successfully", {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          address: user.address,
+          phone: user.phone,
+          profilePicture: user.profilePicture,
+          accessToken: newAccessToken,
+          refreshToken: refreshToken,
+        },
+      })
+    );
+});

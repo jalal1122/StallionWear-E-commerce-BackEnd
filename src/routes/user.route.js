@@ -3,6 +3,7 @@ import {
   registerUser,
   loginUser,
   logoutUser,
+  refreshAccessToken,
 } from "../controllers/user.controller.js";
 import { uploadSingle } from "../middlewares/multer.middleware.js";
 import { authLimiter } from "../middlewares/rateLimiter.middleware.js";
@@ -37,5 +38,8 @@ userRouter.post(
   authMiddleware, // Require authentication
   logoutUser
 );
+
+// @desc Route to refresh access token
+userRouter.post("/refresh-token", refreshAccessToken);
 
 export default userRouter;
