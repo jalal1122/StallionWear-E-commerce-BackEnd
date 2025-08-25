@@ -29,6 +29,7 @@ app.use(
       "https://stallion-wear-e-commerce-front-end-kappa.vercel.app/",
       "https://stallionwear.vercel.app/",
       "http://localhost:5173",
+      "*"
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
