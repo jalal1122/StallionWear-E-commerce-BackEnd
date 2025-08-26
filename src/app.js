@@ -25,9 +25,15 @@ app.use(
 // CORS configuration
 app.use(
   cors({
-    origin: ["https://stallionwear.vercel.app/", "http://localhost:5173"],
+    origin: [
+      "https://stallionwear.vercel.app",
+      "https://stallionwear.vercel.app/",
+      "http://localhost:5173",
+      "http://localhost:3000",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
   })
 );
 
