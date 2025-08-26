@@ -20,7 +20,7 @@ app.use(
 );
 
 // Apply rate limiting to all requests
-// app.use(generalLimiter);
+app.use(generalLimiter);
 
 // CORS configuration
 app.use(
