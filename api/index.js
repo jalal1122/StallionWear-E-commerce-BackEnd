@@ -1,47 +1,53 @@
-// Vercel serverless function entry point
 import app from "../src/app.js";
 import connectDB from "../src/configs/db.config.js";
 import { config } from "dotenv";
 import validateEnvVars from "../src/utils/validateEnv.js";
 
-// Load environment variables
+// config the environment variables
 config();
 
 // Validate required environment variables
 validateEnvVars();
 
-let isConnected = false;
+// get the port from environment variables or use default
+const PORT = process.env.PORT || 3000;
 
-// Connect to database only once
-const connectToDatabase = async () => {
-  if (isConnected) {
-    return;
-  }
-
-  try {
-    await connectDB();
-    isConnected = true;
-    console.log("Database connected successfully");
-  } catch (error) {
-    console.error("Database connection failed:", error);
-    throw error;
-  }
+// Graceful shutdown function
+const gracefulShutdown = (signal) => {
+  console.log(`Received ${signal}. Shutting down gracefully...`);
+  process.exit(0);
 };
 
-// Export the serverless function handler
-export default async (req, res) => {
-  try {
-    // Ensure database is connected before handling requests
-    await connectToDatabase();
+// Handle process termination
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
-    // Handle the request with the Express app
-    return app(req, res);
-  } catch (error) {
-    console.error("Serverless function error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+// Handle uncaught exceptions
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception:", error);
+  process.exit(1);
+});
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  process.exit(1);
+});
+
+// Start the server and connect to the database
+connectDB()
+  .then(() => {
+    const server = app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
     });
-  }
-};
+
+    // Handle server errors
+    server.on("error", (error) => {
+      console.error("Server error:", error);
+      process.exit(1);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  });
