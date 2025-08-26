@@ -1,11 +1,13 @@
 {
   "name": "stallionwear-e-commerce-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "api/index.js",
   "type": "module",
   "scripts": {
     "start": "node ./src/server.js",
-    "dev": "nodemon ./src/server.js"
+    "dev": "nodemon ./src/server.js",
+    "build": "echo 'Build complete'",
+    "vercel-build": "echo 'Vercel build complete'"
   },
   "repository": {
     "type": "git",
