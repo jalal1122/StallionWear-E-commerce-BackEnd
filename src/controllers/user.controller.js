@@ -7,7 +7,7 @@ import uploadOnCloudinary from "../utils/cloudinary.js";
 // cookies Options
 const cookieOptions = {
   httpOnly: true,
-  secure: true,
+  secure: import.meta.env.NODE_ENV === "production",
 };
 
 // Function to register a new user

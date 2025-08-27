@@ -7,7 +7,6 @@ export const handleValidationErrors = (req, res, next) => {
   if (!errors.isEmpty()) {
     const errorMessages = errors.array().map((error) => error.msg);
     console.log("Validation errors:", errorMessages);
-
     throw new ApiError(400, errorMessages.join(", "));
   }
   next();

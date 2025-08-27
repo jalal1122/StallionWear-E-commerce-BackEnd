@@ -21,6 +21,7 @@ export const createOrder = asyncHandler(async (req, res) => {
     discount = 0,
     notes,
   } = req.body;
+  
 
   //   get the user id from the middleware
   const userId = req.user._id;
@@ -56,6 +57,7 @@ export const createOrder = asyncHandler(async (req, res) => {
   if (discount < 0) {
     throw new ApiError(400, "Discount cannot be negative");
   }
+  
 
   // Validate and process order items
   const processedOrderItems = [];
