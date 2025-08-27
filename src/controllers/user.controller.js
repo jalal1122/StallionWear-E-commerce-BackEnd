@@ -3,6 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import uploadOnCloudinary from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken";
 
 // cookies Options
 const cookieOptions = {
@@ -148,22 +149,16 @@ export const logoutUser = asyncHandler(async (req, res) => {
 
 // Function to refresh access token using refresh token
 export const refreshAccessToken = asyncHandler(async (req, res) => {
-  // Get refresh token from cookies or request body
-  const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+  // Get refresh token from cookies first, then request body
+  const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
 
-  console.log("refreshing token");
+  console.log("Refreshing access token");
 
   if (!refreshToken) {
     throw new ApiError(401, "Refresh token is missing");
   }
 
-  // Find user with this refresh token
-  const user = await User.findOne({ refreshToken }).select("-password");
-  if (!user) {
-    throw new ApiError(401, "Invalid refresh token");
-  }
-
-  // Verify refresh token
+  // Verify refresh token first
   let decoded;
   try {
     decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
@@ -171,7 +166,17 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Refresh token is invalid or expired");
   }
 
-  // Issue new access token
+  // Find user with this refresh token and verify user ID matches
+  const user = await User.findOne({
+    _id: decoded.id,
+    refreshToken: refreshToken,
+  }).select("-password");
+
+  if (!user) {
+    throw new ApiError(401, "Invalid refresh token or user not found");
+  }
+
+  // Generate new access token
   const newAccessToken = user.generateAccessToken();
 
   // Send new tokens in response (cookie and body)

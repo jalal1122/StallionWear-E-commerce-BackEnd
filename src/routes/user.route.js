@@ -15,6 +15,9 @@ import authMiddleware from "../middlewares/auth.middleware.js";
 
 const userRouter = express.Router();
 
+// @desc Route to refresh access token
+userRouter.post("/refresh-token", refreshAccessToken);
+
 // @desc Route to register a new user
 userRouter.post(
   "/register",
@@ -39,7 +42,5 @@ userRouter.post(
   logoutUser
 );
 
-// @desc Route to refresh access token
-userRouter.post("/refresh-token", refreshAccessToken);
 
 export default userRouter;
