@@ -27,7 +27,7 @@ app.use(
   cors({
     origin: [
       "https://stallionwear.vercel.app",
-      "https://stallionwear.vercel.app/",
+      "https://stallionwear.netlify.app",
       "http://localhost:5173",
       "http://localhost:3000",
     ],
