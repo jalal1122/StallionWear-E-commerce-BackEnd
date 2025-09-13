@@ -141,6 +141,9 @@ export const getAllProducts = asyncHandler(async (req, res) => {
     query.category = category;
   }
 
+  console.log("Category filter applied:", query.category);
+  
+
   // Brand filter
   if (brand) {
     // query.brand = brand;

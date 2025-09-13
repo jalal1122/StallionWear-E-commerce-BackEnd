@@ -9,19 +9,20 @@ import {
 
 const reviewRouter = express.Router();
 
-// use auth middleware for all routes
-reviewRouter.use(authMiddleware);
-
-// Get orders to review
-reviewRouter.get("/orders", getOrdersToReview);
-
-// Add a review
-reviewRouter.post("/add", addReview);
-
 // Get reviews for a product
 reviewRouter.get("/:productId/reviews", getProductReviews);
 
+// Get orders to review
+reviewRouter.get("/orders", authMiddleware, getOrdersToReview);
+
+// Add a review
+reviewRouter.post("/add", authMiddleware, addReview);
+
 // Delete a review
-reviewRouter.delete("/:productId/reviews/:reviewId", deleteReview);
+reviewRouter.delete(
+  "/:productId/reviews/:reviewId",
+  authMiddleware,
+  deleteReview
+);
 
 export default reviewRouter;
