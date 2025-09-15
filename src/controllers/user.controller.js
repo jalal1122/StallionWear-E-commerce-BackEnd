@@ -177,7 +177,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 
   // Generate new access token
-  const newAccessToken = user.generateAccessToken();
+  const newAccessToken = await user.generateAccessToken();
 
   // Send new tokens in response (cookie and body)
   res
